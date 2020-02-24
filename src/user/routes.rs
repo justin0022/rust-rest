@@ -1,22 +1,19 @@
-use crate::user::User;
-use actix_web::{get, post, put, delete, web, HttpResponse, Responder};
+use crate::api_error::ApiError;
+use crate::user::{User, UserMessage};
+use actix_web::{delete, get, post, put, web, HttpResponse};
 use serde_json::json;
+use uuid::Uuid;
 
 #[get("/users")]
-async fn find_all() -> impl Responder {
-  HttpResponse::Ok().json(
-    vec![
-      User { id: 1, email: "test@test.com".to_string() },
-      User { id: 2, email: "test1@test.com".to_string() }
-    ]
-  )
+async fn find_all() -> Result<HttpResponse, ApiError> {
+  let users = User::find_all()?;
+  Ok(HttpResponse::Ok().json(users))
 }
 
 #[get("/users/{id}")]
-async fn find() -> impl Responder {
-  HttpResponse::Ok().json({
-    User { id: 1, email: "tore@cloudmaker.dev".to_string() }
-  })
+async fn find(id: web::Path<Uuid>) -> Result<HttpResponse, ApiError> {
+  let user = User::find(id.into_inner())?;
+  Ok(HttpResponse::Ok().json(user))
 }
 
 #[post("/users")]

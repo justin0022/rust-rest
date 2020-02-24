@@ -48,10 +48,43 @@ impl User {
 
     let user = User::from(user);
     let user = diesel::insert_into(user::table)
-      .values(user)
+        .values(user)
+        .get_result(&conn)?;
+
+    Ok(user)
+  }
+
+  pub fn update(id: Uuid, user: UserMessage) -> Result<Self, ApiError> {
+    let conn = db::connection()?;
+
+    let user = diesel::update(user::table)
+      .filter(user::id.eq(id))
+      .set(user)
       .get_result(&conn)?;
 
     Ok(user)
+  }
+
+  pub fn delete(id: Uuid) -> Result<usize, ApiError> {
+    let conn = db::connection()?;
+
+    let res = diesel::delete(
+      user::table
+        .filter(user::id.eq(id))
+    ).execute(&conn)?;
+
+    Ok(res)
+  }
 }
 
-  // pub fn update(id: Uuid)
+impl From<UserMessage> for User {
+  fn from(user: UserMessage) -> Self {
+    User {
+      id: Uuid::new_v4(),
+      email: user.email,
+      password: user.password,
+      created_at: Utc::now().naive_utc(),
+      updated_at: None,
+    }
+  }
+}

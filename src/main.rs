@@ -1,11 +1,19 @@
+// src/main.rs
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
 
-use actix_web::{App, HttpResponse, HttpServer, Responder, get};
+use actix_web::{App, HttpServer};
 use dotenv::dotenv;
 use listenfd::ListenFd;
 use std::env;
 
+mod api_error;
+mod db;
+mod schema;
 mod user;
 
 #[actix_rt::main]
