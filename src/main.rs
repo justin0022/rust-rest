@@ -1,21 +1,30 @@
-use actix_web::{App, HttpResponse, HttpServer, Responder, get};
-use listenfd::ListenFd;
+#[macro_use]
+extern crate log;
 
-#[get("/")]
-async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Hello World!")
-}
+use actix_web::{App, HttpResponse, HttpServer, Responder, get};
+use dotenv::dotenv;
+use listenfd::ListenFd;
+use std::env;
+
+mod user;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+    env_logger::init();
+
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(||
         App::new()
-            .service(index)
+            .configure(user::init_routes)
     );
     server = match listenfd.take_tcp_listener(0)? {
         Some(listener) => server.listen(listener)?,
-        None => server.bind("127.0.0.1:5000")?,
+        None => {
+            let host = env::var("HOST").expect("Host not set");
+            let port = env::var("PORT").expect("Port not set");
+            server.bind(format!("{}:{}", host, port))?
+        }
     };
     server.run().await
 }
