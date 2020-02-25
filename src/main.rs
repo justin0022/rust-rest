@@ -34,5 +34,6 @@ async fn main() -> std::io::Result<()> {
             server.bind(format!("{}:{}", host, port))?
         }
     };
+    info!("Starting server");
     server.run().await
 }

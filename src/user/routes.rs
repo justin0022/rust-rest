@@ -1,5 +1,5 @@
 use crate::api_error::ApiError;
-use crate::user::{User, UserMessage};
+use crate::user::model::{User, UserMessage};
 use actix_web::{delete, get, post, put, web, HttpResponse};
 use serde_json::json;
 use uuid::Uuid;
@@ -17,18 +17,21 @@ async fn find(id: web::Path<Uuid>) -> Result<HttpResponse, ApiError> {
 }
 
 #[post("/users")]
-async fn create(user: web::Json<User>) -> impl Responder {
-  HttpResponse::Created().json(user.into_inner())
+async fn create(user: web::Json<UserMessage>) -> Result<HttpResponse, ApiError> {
+  let users = User::create(user.into_inner())?;
+  Ok(HttpResponse::Ok().json(users))
 }
 
 #[put("/users/{id}")]
-async fn update(user: web::Json<User>) -> impl Responder {
-  HttpResponse::Ok().json(user.into_inner())
+async fn update(id: web::Path<Uuid>, user: web::Json<UserMessage>) -> Result<HttpResponse, ApiError> {
+  let user = User::update(id.into_inner(), user.into_inner())?;
+  Ok(HttpResponse::Ok().json(user))
 }
 
 #[delete("/users/{id}")]
-async fn delete() -> impl Responder {
-  HttpResponse::Ok().json(json!({"message": "Deleted"}))
+async fn delete(id: web::Path<Uuid>) -> Result<HttpResponse, ApiError> {
+  let num_deleted = User::delete(id.into_inner())?;
+  Ok(HttpResponse::Ok().json(json!({ "deleted": num_deleted })))
 }
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {

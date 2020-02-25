@@ -9,26 +9,25 @@ use uuid::Uuid;
 #[derive(Serialize, Deserialize, AsChangeset)]
 #[table_name = "user"]
 pub struct UserMessage {
-    pub email: String,
-    pub password: String,
+  pub email: String,
+  pub password: String,
 }
 
 #[derive(Serialize, Deserialize, Queryable, Insertable)]
 #[table_name = "user"]
 pub struct User {
-    pub id: Uuid,
-    pub email: String,
-    pub password: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: Option<NaiveDateTime>,
+  pub id: Uuid,
+  pub email: String,
+  pub password: String,
+  pub created_at: NaiveDateTime,
+  pub updated_at: Option<NaiveDateTime>,
 }
 
 impl User {
   pub fn find_all() -> Result<Vec<Self>, ApiError> {
     let conn = db::connection()?;
 
-    let users = user::table
-      .load::<User>(&conn)?;
+    let users = user::table.load::<User>(&conn)?;
 
     Ok(users)
   }
@@ -36,9 +35,7 @@ impl User {
   pub fn find(id: Uuid) -> Result<Self, ApiError> {
     let conn = db::connection()?;
 
-    let user = user::table
-      .filter(user::id.eq(id))
-      .first(&conn)?;
+    let user = user::table.filter(user::id.eq(id)).first(&conn)?;
 
     Ok(user)
   }
@@ -48,8 +45,8 @@ impl User {
 
     let user = User::from(user);
     let user = diesel::insert_into(user::table)
-        .values(user)
-        .get_result(&conn)?;
+      .values(user)
+      .get_result(&conn)?;
 
     Ok(user)
   }
@@ -68,10 +65,7 @@ impl User {
   pub fn delete(id: Uuid) -> Result<usize, ApiError> {
     let conn = db::connection()?;
 
-    let res = diesel::delete(
-      user::table
-        .filter(user::id.eq(id))
-    ).execute(&conn)?;
+    let res = diesel::delete(user::table.filter(user::id.eq(id))).execute(&conn)?;
 
     Ok(res)
   }
